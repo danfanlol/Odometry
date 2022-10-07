@@ -101,6 +101,7 @@ array<double,3> odometry(double absx, double absy, double robotAngle){
 	double tb = 6;
 
 	double angle = (left_arc - right_arc)/(tr + tl);//angle is only change in robot's global angle. We must add the change to the robot's global angle.
+	double difference = angle - robotAngle;
 
 	double x,y;
 	if (left_arc == right_arc){
@@ -108,24 +109,20 @@ array<double,3> odometry(double absx, double absy, double robotAngle){
 		y = left_arc;
 	}
 	else{
-		y = 2*((right_arc/angle)+tr)*(sin(angle/2));
-		x = 2*((horizontal_arc/angle)+tb)*(sin(angle/2));
+		y = 2*((right_arc/difference)+tr)*(sin(angle/2));
+		x = 2*((horizontal_arc/difference)+tb)*(sin(angle/2));
 	}
-
-	robotAngle = robotAngle + (angle/2);
-	if (robotAngle < 0){
-		robotAngle += 360; //robot angle is the robot's global angle in the new coordinate system
-	}
-
+	double avg = robotAngle + difference/2;
 
 	double r = sqrt(pow(x,2)+pow(y,2));
-	double theta = atan(y/x) + (robotAngle*-1);
+	double theta = atan(y/x) + (avg*-1);
 
-	absx += r*cos(theta);
-	absy += r*sin(theta);
+	double diffx = r*cos(theta);
+	double diffy = r*sin(theta);
 	std:: array<double,3> array;
-	array[0] = absx;
-	array[1] = absy;
+	robotAngle = angle;
+	array[0] = diffx;
+	array[1] = diffy;
 	array[2] = robotAngle;
 	return array;
 }
@@ -133,7 +130,7 @@ array<double,3> goToPosition(double destx, double desty, double curx, double cur
 	double a = destx - curx;
 	double b = desty- cury;
 	double angle; // angle that the robot needs to turn to
-	if (a > 0){
+	if (a > 0 && b > 0){
 		angle = 90 - atan(b/a); //had a hard time deriving these formulas for the angle to turn to
 	}
 	else if (a < 0){
@@ -156,8 +153,8 @@ array<double,3> goToPosition(double destx, double desty, double curx, double cur
 				break;
 			}
 			std:: array<double,3> newAngle = odometry(curx,cury,curAngle);
-			curx = newAngle[0];
-			cury = newAngle[1];
+			curx += newAngle[0];
+			cury += newAngle[1];
 			curAngle = newAngle[2];
 		}
 	}
@@ -171,16 +168,16 @@ array<double,3> goToPosition(double destx, double desty, double curx, double cur
 				break;
 			}
 			std:: array<double,3> newAngle = odometry(curx,cury,curAngle);
-			curx = newAngle[0];
-			cury = newAngle[1];
+			curx += newAngle[0];
+			cury += newAngle[1];
 			curAngle = newAngle[2];
 		}
 	}
 	setDrive(2,2);
 	while (true){ //use distance formula to calculate distance from destination
 		std:: array<double,3> pos = odometry(curx,cury,curAngle);
-		curx = pos[0];
-		cury = pos[1];
+		curx += pos[0];
+		cury += pos[1];
 		curAngle = pos[2];
 		double distance = sqrt(pow(destx-curx,2)+pow(desty-cury,2));
 		if (distance < 1){ //because of the offset created while turning, robot might miss destination by a couple units.
@@ -188,7 +185,7 @@ array<double,3> goToPosition(double destx, double desty, double curx, double cur
 			break;
 		}
 	}
-	setDrive(0,0); //stop robot 
+	setDrive(0,0); //stop robot
 	std:: array<double,3> array;
 	array[0] = curx;
 	array[1] = cury;
