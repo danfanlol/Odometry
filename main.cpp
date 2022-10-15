@@ -96,7 +96,7 @@ array<double,3> odometry(double absx, double absy, double robotAngle){
 	double right_arc = rotation2 * (3.141592653589793238462643383279502884197*2.75);
 	double horizontal_arc = rotation3 * (3.141592653589793238462643383279502884197*2.75);
 
-	double tr = 4.75;
+	double tr = 4.75; //inches for all
 	double tl = 4.75;
 	double tb = 6;
 
@@ -130,7 +130,7 @@ array<double,3> goToPosition(double destx, double desty, double curx, double cur
 	double a = destx - curx;
 	double b = desty- cury;
 	double angle; // angle that the robot needs to turn to
-	if (a > 0 && b > 0){
+	if (a > 0){
 		angle = 90 - atan(b/a); //had a hard time deriving these formulas for the angle to turn to
 	}
 	else if (a < 0){
@@ -143,7 +143,7 @@ array<double,3> goToPosition(double destx, double desty, double curx, double cur
 	double leftTurn = curAngle-angle;
 	if (leftTurn < 0) leftTurn += 360;
 	if(rightTurn <= leftTurn){
-		setDrive(10,2);
+		setDrive(5,-5);
 		while (true){
 			double difference = angle-curAngle;
 			if (difference < 0) difference += 360;
@@ -159,7 +159,7 @@ array<double,3> goToPosition(double destx, double desty, double curx, double cur
 		}
 	}
 	else{
-		setDrive(2,10);
+		setDrive(-5,5);
 		while (true){
 			double difference = curAngle-angle;
 			if (difference < 0) difference += 360;
