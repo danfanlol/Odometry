@@ -83,7 +83,7 @@ void topLeftCorner(){
 
 pros::Rotation rotation_sensor(12);
 pros::Rotation rotation_sensor2(11);
-pros::Rotation rotation_sensor3(10);
+pros::Rotation rotation_sensor3(13);
 array<double,3> odometry(double absx, double absy, double robotAngle){
 
 	// odometry uses robot's first starting point as origin.
